@@ -1,0 +1,21 @@
+# Build context hygiene: everything the image builds is fetched or compiled
+# inside it, so the only things worth sending are the sources.
+
+.git
+.gitignore
+**/.git
+
+# Front-end dependencies are installed with "npm ci" in the image. The built
+# bundle is excluded too: the image builds its own from web/.
+web/node_modules
+internal/server/webui/dist
+
+# Editors, local builds and scratch files.
+.vscode
+.idea
+*.exe
+*.test
+*.out
+*.log
+data/
+interop/node_modules

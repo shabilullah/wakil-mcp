@@ -1,0 +1,13 @@
+{
+  "name": "wakil-mcp-interop",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Interoperability probe: drives a running wakil-mcp with the official TypeScript SDK.",
+  "scripts": {
+    "probe": "node probe.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  }
+}

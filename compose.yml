@@ -1,0 +1,46 @@
+# wakil-mcp as a Dockge stack: copy this file into a stack folder (plus a .env
+# if you want to change anything) and deploy. The image is published by
+# .github/workflows/publish.yml; latest is the tip of main.
+#
+# First start prints the admin token and a ready client token to the container
+# log. Open http://<host>:8765/ and paste the admin token.
+
+services:
+  wakil-mcp:
+    image: ghcr.io/shabilullah/wakil-mcp:latest
+
+    # GHCR packages start private even when the repository is public. Either
+    # flip this package to public once (package settings on GitHub) or give
+    # Dockge a ghcr.io login backed by a token with read:packages.
+    restart: unless-stopped
+
+    # Keeps :latest current on every up, not only on Dockge's Update button.
+    # Drop this line on a host that is often offline: restarts then reuse the
+    # cached image instead of failing on the registry.
+    pull_policy: always
+
+    ports:
+      # The daemon always serves 8765 in the container; WAKIL_PORT in the
+      # stack's .env moves the host side only.
+      - "${WAKIL_PORT:-8765}:8765"
+
+    environment:
+      TZ: "${TZ:-UTC}"
+      # Secrets that config.json refers to as ${env:NAME} are resolved from the
+      # daemon's environment, so an upstream needing a GitHub token gets:
+      #   GITHUB_TOKEN: "${GITHUB_TOKEN}"
+
+    volumes:
+      # config.json, the audit database and the token hashes live in /data.
+      # A named volume is pre-owned by uid 10001, the user the daemon runs as,
+      # so this works as is. For a file you can see and back up on the host,
+      # swap in a bind mount, created up front for that same uid:
+      #   mkdir -p data && sudo chown -R 10001:10001 data
+      #   - ./data:/data
+      - wakil-data:/data
+
+    # Health: the image already carries a HEALTHCHECK against /healthz, and
+    # Dockge shows the container as healthy from it.
+
+volumes:
+  wakil-data:

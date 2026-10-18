@@ -1,0 +1,40 @@
+# Build outputs. These are what "go build" leaves behind.
+/wakil-mcp
+/wakil-mcp.exe
+/mcpfixture
+/mcpfixture.exe
+*.exe
+*.test
+*.prof
+/dist
+coverage.out
+*.coverprofile
+
+# Front-end dependencies. The built bundle under internal/server/webui/dist is
+# deliberately not ignored: it is embedded into the binary, so a plain "go build"
+# works from a clone without Node.
+node_modules/
+web/dist
+
+# Local state: config, audit database, scratch captures.
+/data
+/config.json
+/config.json.bak
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.log
+*.out
+
+# Local secrets. Token values for ${env:VAR} references belong in a file like
+# this, never in config.json.
+.env
+.env.*
+!.env.example
+
+# Editors and OS.
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

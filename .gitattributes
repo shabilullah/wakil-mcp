@@ -1,0 +1,8 @@
+# The tree is LF everywhere: Go sources, the Dockerfile the image is built from,
+# the ignore files, and the embedded web bundle.
+#
+# Windows checkouts would otherwise rewrite all of it to CRLF, because
+# core.autocrlf defaults to true there. That shows up as diff churn, makes the
+# committed bundle differ from the one that was tested, and can put a stray \r
+# into anything a build reads.
+* text=auto eol=lf

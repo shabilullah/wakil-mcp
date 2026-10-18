@@ -1,0 +1,107 @@
+# Builds and publishes the container image.
+#
+# main is the release channel: every push there publishes :latest, :main and
+# :sha-<commit>, for linux/amd64 and linux/arm64. A v* tag publishes semver
+# tags instead (:1.2.3 and :1.2). Pull requests run the tests and build the
+# image, but never push.
+name: publish
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# A newer push supersedes an older one. A cancelled run can only leave latest
+# pointing at the previous commit, never at a broken image.
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Vet
+        run: go vet ./...
+      - name: Test (Go)
+        run: go test ./... -count=1
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Test (web)
+        run: npm ci && npm test
+        working-directory: web
+      - name: Build (web)
+        run: npm run build
+        working-directory: web
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
+
+      - uses: docker/login-action@v4
+        if: github.event_name != 'pull_request'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # :latest is what compose.yml pins. metadata-action also emits the OCI
+      # labels (revision, created, source) that the Dockerfile sets by hand for
+      # local builds; it leaves org.opencontainers.image.licenses alone.
+      - name: Tags and labels
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,format=short
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      # Feeds the version stamp the banner and "wakil-mcp version" print.
+      - name: Build date
+        id: vars
+        run: echo "date=$(date -u +%F)" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          # A pull request builds the image to prove the Dockerfile still
+          # works; only a push to main or a tag publishes it.
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VERSION=${{ steps.meta.outputs.version }}
+            COMMIT=${{ github.sha }}
+            DATE=${{ steps.vars.outputs.date }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

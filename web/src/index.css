@@ -1,0 +1,129 @@
+@import "tailwindcss";
+
+/* Dark mode is driven by a class on <html> so the toggle is instant and does
+   not depend on the operating system. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono:
+    ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-zinc-50 font-sans text-zinc-900 antialiased;
+    @apply dark:bg-zinc-950 dark:text-zinc-100;
+  }
+
+  /* A stable scrollbar keeps the layout from shifting when a pane fills up. */
+  * {
+    scrollbar-color: var(--color-zinc-400) transparent;
+  }
+
+  .dark * {
+    scrollbar-color: var(--color-zinc-700) transparent;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-emerald-500;
+  }
+}
+
+@layer components {
+  .surface {
+    @apply rounded-xl border border-zinc-200 bg-white shadow-sm;
+    @apply dark:border-zinc-800 dark:bg-zinc-900;
+  }
+
+  .btn {
+    @apply inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 transition;
+    @apply hover:bg-zinc-100 active:translate-y-px;
+    @apply disabled:pointer-events-none disabled:opacity-45;
+    @apply dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800;
+  }
+
+  .btn-primary {
+    @apply border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-500;
+    @apply dark:border-emerald-600 dark:bg-emerald-600 dark:text-white dark:hover:bg-emerald-500;
+  }
+
+  .btn-danger {
+    @apply border-red-300 text-red-700 hover:bg-red-50;
+    @apply dark:border-red-900/70 dark:text-red-400 dark:hover:bg-red-950/40;
+  }
+
+  .btn-ghost {
+    @apply border-transparent bg-transparent text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900;
+    @apply dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100;
+  }
+
+  .btn-sm {
+    @apply px-2 py-1 text-xs;
+  }
+
+  .field {
+    @apply w-full rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 transition;
+    @apply placeholder:text-zinc-400;
+    @apply focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none;
+    @apply dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-600;
+  }
+
+  .label {
+    @apply block text-xs font-medium tracking-wide text-zinc-500 uppercase dark:text-zinc-400;
+  }
+
+  .mono {
+    @apply font-mono text-[0.8125rem];
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium;
+  }
+
+  .card-head {
+    @apply flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200 px-4 py-3;
+    @apply dark:border-zinc-800;
+  }
+
+  .th {
+    @apply px-3 py-2 text-left text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400;
+  }
+
+  .td {
+    @apply px-3 py-2 align-top text-sm;
+  }
+
+  .kbd {
+    @apply rounded border border-zinc-300 bg-zinc-100 px-1 py-px font-mono text-[0.7rem] text-zinc-600;
+    @apply dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300;
+  }
+
+  .link {
+    @apply text-emerald-700 underline decoration-emerald-700/30 underline-offset-2 hover:decoration-emerald-700;
+    @apply dark:text-emerald-400 dark:decoration-emerald-400/30 dark:hover:decoration-emerald-400;
+  }
+
+  .divider {
+    @apply border-t border-zinc-200 dark:border-zinc-800;
+  }
+}
+
+/* CodeMirror needs to fill its container and follow the theme. */
+.cm-editor {
+  height: 100%;
+  font-size: 0.8125rem;
+}
+
+.cm-editor.cm-focused {
+  outline: none;
+}
+
+.cm-scroller {
+  font-family: var(--font-mono) !important;
+}
